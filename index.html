@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aster Cafe Server Calculation Tool</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f8f3ea; }
+        .container { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input[type="number"] { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        button { padding: 10px; background-color: #0b1957; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 5px; }
+        button:hover { background-color: #22348b; }
+        .results { margin-top: 15px; background-color: #ffdbd1; padding: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Aster Cafe Server Calculation Tool</h2>
+
+    <label>Total Digital Tips:</label>
+    <input type="number" id="digitalTips" placeholder="0" />
+
+    <label>Total Cash & Receipt Tips:</label>
+    <input type="number" id="cashTips" placeholder="0" />
+
+    <label>Total Food Sales:</label>
+    <input type="number" id="foodSales" placeholder="0" />
+
+    <label>Bartenders:</label>
+    <input type="number" id="bartenders" min="0" value="1" />
+
+    <label>Barbacks:</label>
+    <input type="number" id="barbacks" min="0" value="1" />
+
+    <label>Hosts:</label>
+    <input type="number" id="hosts" min="0" value="1" />
+
+    <button onclick="calculateTips()">Calculate an Estimate</button>
+    <button onclick="location.reload();">Reset</button>
+
+    <div class="results" id="results"></div>
+</div>
+
+<script>
+function calculateTips() {
+    const digitalTips = parseFloat(document.getElementById('digitalTips').value) || 0;
+    const cashTips = parseFloat(document.getElementById('cashTips').value) || 0;
+    const foodSales = parseFloat(document.getElementById('foodSales').value) || 0;
+
+    const totalTips = digitalTips + cashTips;
+    const kto = foodSales * 0.02;
+    const remainingTips = totalTips - kto;
+
+    const bartendersCount = parseInt(document.getElementById('bartenders').value) || 0;
+    const barbacksCount = parseInt(document.getElementById('barbacks').value) || 0;
+    const hostsCount = parseInt(document.getElementById('hosts').value) || 0;
+
+    const bartendersTip = bartendersCount ? ((remainingTips * 0.15) / bartendersCount).toFixed(2) : 0;
+    const barbacksTip = barbacksCount ? ((remainingTips * 0.10) / barbacksCount).toFixed(2) : 0;
+    const hostsTip = hostsCount ? ((remainingTips * 0.05) / hostsCount).toFixed(2) : 0;
+
+    document.getElementById('results').innerHTML = `
+        <strong>Suggested Tip Out:</strong><br>
+        KTO (Kitchen): $${kto.toFixed(2)}<br>
+        Bartenders (each): $${bartendersTip}<br>
+        Barbacks (each): $${barbacksTip}<br>
+        Hosts (each): $${hostsTip}<br>
+        <small>Based on Aster Cafe 2024 Employee Handbook page 18</small>
+    `;
+}
+</script>
+</body>
+</html>
