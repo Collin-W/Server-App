@@ -5,30 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Aster Cafe Server Calculation Tool</title>
 
-    
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; background-color: #f8f3ea; overflow-x: hidden; }
         .container { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: relative; }
-        input[type="number"] { width: 100%;  font-size: 16px; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        button { padding: 10px; border: none; border-radius: 4px; cursor: pointer; margin-top: 5px; }
-        .calculate-button { background-color: #0b1957; color: white; width: 100%; margin-bottom: 5px; }
+        input[type="number"] {
+            width: 100%; font-size: 16px; padding: 8px 8px 8px 28px; margin-bottom: 15px;
+            border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;
+            background: url('https://i.imgur.com/1Qg9gZp.png') no-repeat 8px center; background-size: 15px;
+        }
+        button { padding: 10px; border: none; border-radius: 4px; cursor: pointer; transition: transform 0.1s ease, box-shadow 0.1s ease; }
+        button:active { transform: scale(0.98); box-shadow: inset 0 1px 2px rgba(0,0,0,0.2); }
+        .calculate-button { background-color: #0b1957; color: white; width: 100%; margin-bottom: 10px; }
         .calculate-button:hover { background-color: #22348b; }
-        .reset-button { background-color: #d9534f; color: white; float: right; }
+        .reset-button { background-color: #d9534f; color: white; float: right; margin-top: 10px; }
         .reset-button:hover { background-color: #c9302c; }
-        .results { margin-top: 15px; background-color: #e0f5e0; padding: 10px; border-radius: 4px; display: none; clear: both; }
-        .privacy-note { font-size: 12px; color: #555; margin-top: 10px; }
-        #squirrel { position: absolute; bottom: -150px; left: 50%; transform: translateX(-50%); transition: bottom 0.5s ease; }
-        #squirrel.visible { bottom: 0; }
+        .results {
+            margin-top: 15px; background-color: #e0f5e0; padding: 10px; border-radius: 4px;
+            display: none; clear: both; animation: slide-down 0.3s ease; margin-bottom: 20px;
+        }
+        @keyframes slide-down { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .privacy-note { font-size: 12px; color: #555; margin-top: 15px; text-align: center; }
         .button-row { display: flex; gap: 5px; margin-bottom: 15px; }
         .count-button { flex: 1; padding: 8px; background-color: #eee; color: #333; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
         .count-button.active { background-color: #0b1957; color: white; }
-        .staff-label { margin-bottom: 5px; display: block; }
+        .staff-label { margin-bottom: 5px; display: block; font-weight: bold; }
+        h2 { text-align: center; border-bottom: 2px solid #0b1957; padding-bottom: 5px; }
+        #current-date { text-align: center; color: #666; margin-bottom: 20px; }
+      .privacy-reset {
+        display: flex; justify-content: space-between; gap: 1rem;
+      }
     </style>
 </head>
 <body>
 <div class="container">
     <h2>Aster Cafe Server Calculation Tool</h2>
-    <p id="current-date" style="color: #666; font-size: 14px; margin-top: -5px; margin-bottom: 15px;"></p>
+    <p id="current-date"></p>
 
     <label>Total Digital Tips:</label>
     <input type="number" id="digitalTips" placeholder="0" />
@@ -67,59 +78,43 @@
     </div>
 
     <button class="calculate-button" onclick="calculateTips()">Calculate an Estimate</button>
-
-
     <div class="results" id="results"></div>
 
-    <button class="reset-button" onclick="location.reload();">Reset</button>
-
-   
+  <div class="privacy-reset">
+    
 
     <div class="privacy-note">Your tip information remains confidential and is not stored or shared.</div>
+    <button class="reset-button" onclick="resetForm()">Reset</button>
+  </div>
 
 </div>
 
 <script>
-// Add state variables to track selected counts
-let bartendersCount = 1;
-let barbacksCount = 1;
-let hostsCount = 1;
+function resetForm() {
+    document.querySelectorAll('input[type="number"]').forEach(input => input.value = '');
+    document.querySelector('.results').style.display = 'none';
+}
 
-// Initialize the event listeners for buttons
 document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
     const countButtons = document.querySelectorAll('.count-button');
     countButtons.forEach(button => {
         button.addEventListener('click', function() {
             const type = this.getAttribute('data-type');
-            const value = parseInt(this.getAttribute('data-value'));
+            const value = this.getAttribute('data-value');
 
-            const typeToId = {
+            const buttonGroups = {
                 bartenders: 'bartenderButtons',
                 barbacks: 'barbackButtons',
                 hosts: 'hostButtons'
             };
 
-            const containerId = typeToId[type];
-            document.querySelectorAll(`#${containerId} .count-button`).forEach(btn => {
-                btn.classList.remove('active');
-            });
-
+            const parent = document.getElementById(buttonGroups[type]);
+            parent.querySelectorAll('.count-button').forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
-
-            if (type === 'bartenders') {
-                bartendersCount = value;
-            } else if (type === 'barbacks') {
-                barbacksCount = value;
-            } else if (type === 'hosts') {
-                hostsCount = value;
-            }
         });
     });
-    
-    // Display current date
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    const today = new Date();
-    document.getElementById('current-date').textContent = today.toLocaleDateString('en-US', options);
 });
 
 function calculateTips() {
@@ -131,14 +126,18 @@ function calculateTips() {
     const kto = foodSales * 0.02;
     const remainingTips = totalTips - kto;
 
-    const bartendersTip = bartendersCount ? ((remainingTips * 0.15) / bartendersCount).toFixed(2) : 0;
-    const barbacksTip = barbacksCount ? ((remainingTips * 0.10) / barbacksCount).toFixed(2) : 0;
-    const hostsTip = hostsCount ? ((remainingTips * 0.05) / hostsCount).toFixed(2) : 0;
+    const bartendersCount = parseInt(document.querySelector('#bartenderButtons .count-button.active')?.dataset.value || 0);
+    const barbacksCount = parseInt(document.querySelector('#barbackButtons .count-button.active')?.dataset.value || 0);
+    const hostsCount = parseInt(document.querySelector('#hostButtons .count-button.active')?.dataset.value || 0);
 
-    document.getElementById('results').style.display = 'block';
-    document.getElementById('results').innerHTML = `
-        <strong>Suggested Tip Out:</strong>
-        <br><br>
+    const bartendersTip = bartendersCount > 0 ? ((remainingTips * 0.15) / bartendersCount).toFixed(2) : 0;
+    const barbacksTip = barbacksCount > 0 ? ((remainingTips * 0.10) / barbacksCount).toFixed(2) : 0;
+    const hostsTip = hostsCount > 0 ? ((remainingTips * 0.05) / hostsCount).toFixed(2) : 0;
+
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.style.display = 'block';
+    resultsDiv.innerHTML = `
+        <strong>Suggested Tip Out:</strong><br><br>
         KTO (Kitchen): $${kto.toFixed(2)}<br>
         Bartenders (each): $${bartendersTip}<br>
         Barbacks (each): $${barbacksTip}<br>
