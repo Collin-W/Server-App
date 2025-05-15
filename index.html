@@ -5,12 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aster Cafe Server Calculation Tool</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f8f3ea; }
-        .container { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        input[type="number"] { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f8f3ea; overflow-x: hidden; }
+        .container { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: relative; }
+        input[type="number"] { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px;  box-sizing: border-box; }
         button { padding: 10px; background-color: #0b1957; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 5px; }
         button:hover { background-color: #22348b; }
-        .results { margin-top: 15px; background-color: #ffdbd1; padding: 10px; border-radius: 4px; }
+        .results { margin-top: 15px; background-color: #e0f5e0; padding: 10px; border-radius: 4px; display: none; }
+        .privacy-note { font-size: 12px; color: #555; margin-top: 10px; }
+        #squirrel { position: absolute; bottom: -150px; left: 50%; transform: translateX(-50%); transition: bottom 0.5s ease; }
+        #squirrel.visible { bottom: 0; }
+        .button-row { display: flex; gap: 5px; margin-bottom: 15px; }
+        .count-button { flex: 1; padding: 8px; background-color: #eee; color: #333; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
+        .count-button.active { background-color: #0b1957; color: white; }
+        .staff-label { margin-bottom: 5px; display: block; }
     </style>
 </head>
 <body>
@@ -26,22 +33,81 @@
     <label>Total Food Sales:</label>
     <input type="number" id="foodSales" placeholder="0" />
 
-    <label>Bartenders:</label>
-    <input type="number" id="bartenders" min="0" value="1" />
+    <label class="staff-label">Bartenders:</label>
+    <div class="button-row" id="bartenderButtons">
+        <button class="count-button" data-value="0" data-type="bartenders">0</button>
+        <button class="count-button active" data-value="1" data-type="bartenders">1</button>
+        <button class="count-button" data-value="2" data-type="bartenders">2</button>
+        <button class="count-button" data-value="3" data-type="bartenders">3</button>
+        <button class="count-button" data-value="4" data-type="bartenders">4</button>
+    </div>
 
-    <label>Barbacks:</label>
-    <input type="number" id="barbacks" min="0" value="1" />
+    <label class="staff-label">Barbacks:</label>
+    <div class="button-row" id="barbackButtons">
+        <button class="count-button" data-value="0" data-type="barbacks">0</button>
+        <button class="count-button active" data-value="1" data-type="barbacks">1</button>
+        <button class="count-button" data-value="2" data-type="barbacks">2</button>
+        <button class="count-button" data-value="3" data-type="barbacks">3</button>
+        <button class="count-button" data-value="4" data-type="barbacks">4</button>
+    </div>
 
-    <label>Hosts:</label>
-    <input type="number" id="hosts" min="0" value="1" />
+    <label class="staff-label">Hosts:</label>
+    <div class="button-row" id="hostButtons">
+        <button class="count-button" data-value="0" data-type="hosts">0</button>
+        <button class="count-button active" data-value="1" data-type="hosts">1</button>
+        <button class="count-button" data-value="2" data-type="hosts">2</button>
+        <button class="count-button" data-value="3" data-type="hosts">3</button>
+        <button class="count-button" data-value="4" data-type="hosts">4</button>
+    </div>
 
     <button onclick="calculateTips()">Calculate an Estimate</button>
     <button onclick="location.reload();">Reset</button>
 
     <div class="results" id="results"></div>
+
+    <div class="privacy-note">Your tip information remains confidential and is not stored or shared.</div>
+
 </div>
 
 <script>
+// Add state variables to track selected counts
+let bartendersCount = 1;
+let barbacksCount = 1;
+let hostsCount = 1;
+
+// Initialize the event listeners for buttons
+document.addEventListener('DOMContentLoaded', function() {
+    const countButtons = document.querySelectorAll('.count-button');
+    countButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const type = this.getAttribute('data-type');
+            const value = parseInt(this.getAttribute('data-value'));
+
+            // Map data-type to actual container ID
+            const typeToId = {
+                bartenders: 'bartenderButtons',
+                barbacks: 'barbackButtons',
+                hosts: 'hostButtons'
+            };
+
+            const containerId = typeToId[type];
+            document.querySelectorAll(`#${containerId} .count-button`).forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            this.classList.add('active');
+
+            if (type === 'bartenders') {
+                bartendersCount = value;
+            } else if (type === 'barbacks') {
+                barbacksCount = value;
+            } else if (type === 'hosts') {
+                hostsCount = value;
+            }
+        });
+    });
+});
+
 function calculateTips() {
     const digitalTips = parseFloat(document.getElementById('digitalTips').value) || 0;
     const cashTips = parseFloat(document.getElementById('cashTips').value) || 0;
@@ -51,21 +117,24 @@ function calculateTips() {
     const kto = foodSales * 0.02;
     const remainingTips = totalTips - kto;
 
-    const bartendersCount = parseInt(document.getElementById('bartenders').value) || 0;
-    const barbacksCount = parseInt(document.getElementById('barbacks').value) || 0;
-    const hostsCount = parseInt(document.getElementById('hosts').value) || 0;
-
     const bartendersTip = bartendersCount ? ((remainingTips * 0.15) / bartendersCount).toFixed(2) : 0;
     const barbacksTip = barbacksCount ? ((remainingTips * 0.10) / barbacksCount).toFixed(2) : 0;
     const hostsTip = hostsCount ? ((remainingTips * 0.05) / hostsCount).toFixed(2) : 0;
 
+    document.getElementById('results').style.display = 'block';
     document.getElementById('results').innerHTML = `
-        <strong>Suggested Tip Out:</strong><br>
-        KTO (Kitchen): $${kto.toFixed(2)}<br>
-        Bartenders (each): $${bartendersTip}<br>
-        Barbacks (each): $${barbacksTip}<br>
+        <strong>Suggested Tip Out:</strong>
+        <br>
+        <br>
+        
         Hosts (each): $${hostsTip}<br>
-        <small>Based on Aster Cafe 2024 Employee Handbook page 18</small>
+        Barbacks (each): $${barbacksTip}<br>
+        Bartenders (each): $${bartendersTip}<br>
+        KTO: $${kto.toFixed(2)}<br>
+
+        <br>
+
+        <span style="font-size: 10px;" >Based on Aster Cafe 2024 Employee Handbook page 18</span>
     `;
 }
 </script>
