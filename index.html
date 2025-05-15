@@ -124,15 +124,14 @@ function calculateTips() {
 
     const totalTips = digitalTips + cashTips;
     const kto = foodSales * 0.02;
-    const remainingTips = totalTips - kto;
 
     const bartendersCount = parseInt(document.querySelector('#bartenderButtons .count-button.active')?.dataset.value || 0);
     const barbacksCount = parseInt(document.querySelector('#barbackButtons .count-button.active')?.dataset.value || 0);
     const hostsCount = parseInt(document.querySelector('#hostButtons .count-button.active')?.dataset.value || 0);
 
-    const bartendersTip = bartendersCount > 0 ? ((remainingTips * 0.15) / bartendersCount).toFixed(2) : 0;
-    const barbacksTip = barbacksCount > 0 ? ((remainingTips * 0.10) / barbacksCount).toFixed(2) : 0;
-    const hostsTip = hostsCount > 0 ? ((remainingTips * 0.05) / hostsCount).toFixed(2) : 0;
+    const bartendersTip = bartendersCount > 0 ? ((totalTips * 0.15) / bartendersCount).toFixed(2) : 0;
+const barbacksTip   = barbacksCount > 0 ? ((totalTips * 0.10) / barbacksCount).toFixed(2) : 0;
+const hostsTip      = hostsCount > 0 ? ((totalTips * 0.05) / hostsCount).toFixed(2) : 0;
 
     const resultsDiv = document.getElementById('results');
     resultsDiv.style.display = 'block';
