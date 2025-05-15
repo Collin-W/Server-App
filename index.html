@@ -4,13 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aster Cafe Server Calculation Tool</title>
+
+    
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; background-color: #f8f3ea; overflow-x: hidden; }
         .container { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: relative; }
-        input[type="number"] { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px;  box-sizing: border-box; }
-        button { padding: 10px; background-color: #0b1957; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 5px; }
-        button:hover { background-color: #22348b; }
-        .results { margin-top: 15px; background-color: #e0f5e0; padding: 10px; border-radius: 4px; display: none; }
+        input[type="number"] { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { padding: 10px; border: none; border-radius: 4px; cursor: pointer; margin-top: 5px; }
+        .calculate-button { background-color: #0b1957; color: white; width: 100%; margin-bottom: 5px; }
+        .calculate-button:hover { background-color: #22348b; }
+        .reset-button { background-color: #d9534f; color: white; float: right; }
+        .reset-button:hover { background-color: #c9302c; }
+        .results { margin-top: 15px; background-color: #e0f5e0; padding: 10px; border-radius: 4px; display: none; clear: both; }
         .privacy-note { font-size: 12px; color: #555; margin-top: 10px; }
         #squirrel { position: absolute; bottom: -150px; left: 50%; transform: translateX(-50%); transition: bottom 0.5s ease; }
         #squirrel.visible { bottom: 0; }
@@ -23,6 +28,7 @@
 <body>
 <div class="container">
     <h2>Aster Cafe Server Calculation Tool</h2>
+    <p id="current-date" style="color: #666; font-size: 14px; margin-top: -5px; margin-bottom: 15px;"></p>
 
     <label>Total Digital Tips:</label>
     <input type="number" id="digitalTips" placeholder="0" />
@@ -60,10 +66,14 @@
         <button class="count-button" data-value="4" data-type="hosts">4</button>
     </div>
 
-    <button onclick="calculateTips()">Calculate an Estimate</button>
-    <button onclick="location.reload();">Reset</button>
+    <button class="calculate-button" onclick="calculateTips()">Calculate an Estimate</button>
+
 
     <div class="results" id="results"></div>
+
+    <button class="reset-button" onclick="location.reload();">Reset</button>
+
+   
 
     <div class="privacy-note">Your tip information remains confidential and is not stored or shared.</div>
 
@@ -83,7 +93,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const type = this.getAttribute('data-type');
             const value = parseInt(this.getAttribute('data-value'));
 
-            // Map data-type to actual container ID
             const typeToId = {
                 bartenders: 'bartenderButtons',
                 barbacks: 'barbackButtons',
@@ -106,6 +115,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // Display current date
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const today = new Date();
+    document.getElementById('current-date').textContent = today.toLocaleDateString('en-US', options);
 });
 
 function calculateTips() {
@@ -124,17 +138,12 @@ function calculateTips() {
     document.getElementById('results').style.display = 'block';
     document.getElementById('results').innerHTML = `
         <strong>Suggested Tip Out:</strong>
-        <br>
-        <br>
-        
-        Hosts (each): $${hostsTip}<br>
-        Barbacks (each): $${barbacksTip}<br>
+        <br><br>
+        KTO (Kitchen): $${kto.toFixed(2)}<br>
         Bartenders (each): $${bartendersTip}<br>
-        KTO: $${kto.toFixed(2)}<br>
-
-        <br>
-
-        <span style="font-size: 10px;" >Based on Aster Cafe 2024 Employee Handbook page 18</span>
+        Barbacks (each): $${barbacksTip}<br>
+        Hosts (each): $${hostsTip}<br><br>
+        <span style="font-size: 10px;">Based on Aster Cafe 2024 Employee Handbook page 18</span>
     `;
 }
 </script>
